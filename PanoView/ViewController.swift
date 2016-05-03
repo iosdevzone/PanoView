@@ -3,7 +3,7 @@
 //  PanoView
 //
 //  Created by idz on 5/1/16.
-//  Copyright © 2016 iOS Developer Zone. 
+//  Copyright © 2016 iOS Developer Zone.
 //  License: MIT https://raw.githubusercontent.com/iosdevzone/PanoView/master/LICENSE
 //
 
@@ -18,7 +18,7 @@ class ViewController: UIViewController {
     
     
     @IBOutlet weak var sceneView: SCNView!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Load assets
@@ -43,51 +43,33 @@ class ViewController: UIViewController {
         sphereNode.position = SCNVector3Make(0,0,0)
         scene.rootNode.addChildNode(sphereNode)
         
-        // Lights, ...
-        let ambientLightNode = SCNNode()
-        ambientLightNode.light = SCNLight()
-        ambientLightNode.light!.type = SCNLightTypeAmbient
-        ambientLightNode.light!.color = UIColor(white: 0.67, alpha: 1.0)
-        scene.rootNode.addChildNode(ambientLightNode)
-        
         // Camera, ...
         cameraNode.camera = SCNCamera()
         cameraNode.position = SCNVector3Make(0, 0, 0)
         scene.rootNode.addChildNode(cameraNode)
+
         
-        // Action (Sorry! I could not help myself)
-        if motionManager.deviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
-            motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.mainQueue()) {
-                [weak self](data: CMDeviceMotion?, error: NSError?) in
-                
-                guard let data = data else {
-                    NSLog("Error in deviceMotionUpdate \(error)")
-                    return
-                }
-                guard let strongSelf = self else {
-                    NSLog("Captured weak self was nil in deviceMotionUpdate")
-                    return
-                }
-                
-                let attitude: CMAttitude = data.attitude
-                
-                strongSelf.cameraNode.eulerAngles = SCNVector3Make(Float(attitude.roll - M_PI/2.0), Float(attitude.yaw), Float(attitude.pitch))
-            }
-            
-        }
-        else {
+        guard motionManager.deviceMotionAvailable else {
             fatalError("Device motion is not available")
         }
-
-
+        
+        // Action
+        motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
+        motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.mainQueue()) {
+            [weak self](data: CMDeviceMotion?, error: NSError?) in
+            
+            guard let data = data else { return }
+            
+            let attitude: CMAttitude = data.attitude
+            self?.cameraNode.eulerAngles = SCNVector3Make(Float(attitude.roll - M_PI/2.0), Float(attitude.yaw), Float(attitude.pitch))
+        }
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-
+    
+    
 }
 
