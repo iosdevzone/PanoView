@@ -22,7 +22,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Load assets
-        guard let imagePath = NSBundle.mainBundle().pathForResource("Hellbrunn25", ofType: "jpg") else {
+        guard let imagePath = Bundle.main.path(forResource: "Hellbrunn25", ofType: "jpg") else {
             fatalError("Failed to find path for panaromic file.")
         }
         guard let image = UIImage(contentsOfFile:imagePath) else {
@@ -37,7 +37,7 @@ class ViewController: UIViewController {
         
         //Create node, containing a sphere, using the panoramic image as a texture
         let sphere = SCNSphere(radius: 20.0)
-        sphere.firstMaterial!.doubleSided = true
+        sphere.firstMaterial!.isDoubleSided = true
         sphere.firstMaterial!.diffuse.contents = image
         let sphereNode = SCNNode(geometry: sphere)
         sphereNode.position = SCNVector3Make(0,0,0)
@@ -47,22 +47,23 @@ class ViewController: UIViewController {
         cameraNode.camera = SCNCamera()
         cameraNode.position = SCNVector3Make(0, 0, 0)
         scene.rootNode.addChildNode(cameraNode)
-
         
-        guard motionManager.deviceMotionAvailable else {
+        
+        guard motionManager.isDeviceMotionAvailable else {
             fatalError("Device motion is not available")
         }
         
         // Action
         motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
-        motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.mainQueue()) {
-            [weak self](data: CMDeviceMotion?, error: NSError?) in
+        motionManager.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: {
+            data , error in
             
             guard let data = data else { return }
             
             let attitude: CMAttitude = data.attitude
-            self?.cameraNode.eulerAngles = SCNVector3Make(Float(attitude.roll - M_PI/2.0), Float(attitude.yaw), Float(attitude.pitch))
-        }
+            self.cameraNode.eulerAngles = SCNVector3Make(Float(attitude.roll - M_PI/2.0), Float(attitude.yaw), Float(attitude.pitch))
+            
+        })
     }
     
     override func didReceiveMemoryWarning() {
