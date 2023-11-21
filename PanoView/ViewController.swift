@@ -10,6 +10,7 @@
 import UIKit
 import SceneKit
 import CoreMotion
+import OSLog
 
 class ViewController: UIViewController {
     
@@ -36,9 +37,13 @@ class ViewController: UIViewController {
         sceneView.allowsCameraControl = true
         
         //Create node, containing a sphere, using the panoramic image as a texture
+        let material = SCNMaterial()
+        material.isDoubleSided = true
+        material.diffuse.contents = image
+        
         let sphere = SCNSphere(radius: 20.0)
-        sphere.firstMaterial!.isDoubleSided = true
-        sphere.firstMaterial!.diffuse.contents = image
+        sphere.materials = [material]
+        
         let sphereNode = SCNNode(geometry: sphere)
         sphereNode.position = SCNVector3Make(0,0,0)
         scene.rootNode.addChildNode(sphereNode)
@@ -48,9 +53,11 @@ class ViewController: UIViewController {
         cameraNode.position = SCNVector3Make(0, 0, 0)
         scene.rootNode.addChildNode(cameraNode)
         
-        
+        // This used be a fatalError, but just logging it
+        // allows us to run on the simulator.
         guard motionManager.isDeviceMotionAvailable else {
-            fatalError("Device motion is not available")
+            os_log("Device motion is not available", type: .info)
+            return
         }
         
         // Action
@@ -62,7 +69,6 @@ class ViewController: UIViewController {
             
             let attitude: CMAttitude = data.attitude
             self.cameraNode.eulerAngles = SCNVector3Make(Float(attitude.roll - .pi/2.0), Float(attitude.yaw), Float(attitude.pitch))
-            
         })
     }
     
