@@ -61,7 +61,7 @@ class ViewController: UIViewController {
             guard let data = data else { return }
             
             let attitude: CMAttitude = data.attitude
-            self.cameraNode.eulerAngles = SCNVector3Make(Float(attitude.roll - M_PI/2.0), Float(attitude.yaw), Float(attitude.pitch))
+            self.cameraNode.eulerAngles = SCNVector3Make(Float(attitude.roll - .pi/2.0), Float(attitude.yaw), Float(attitude.pitch))
             
         })
     }
